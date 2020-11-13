@@ -42,6 +42,7 @@ float pressure;
 float temperature;
 float altimeter;
 float humidity;
+int deviceCount = 0;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -59,8 +60,16 @@ void setup() {
     while (1);
   }
 
+  // locate DS18B20 devices on the bus
+  Serial.print("Locating devices...");
+  Serial.print("Found ");
+  deviceCount = sensors.getDeviceCount();
+  Serial.print(deviceCount, DEC);
+  Serial.println(" DS18B20 sensors.");
+  Serial.println("");
+  
   // serial plotter labels
-  Serial.println("Temperature[degC]_Dallas,Temperature[degC]_bme280,Pressure[hPa],Approx.Altitude[m],Humidity[%]");
+  Serial.println("Temperature[degC]_Dallas_0,Temperature[degC]_Dallas_1,Temperature[degC]_Dallas_2,Temperature[degC]_bme280,Pressure[hPa],Approx.Altitude[m],Humidity[%]");
 }
 
 // the loop function runs over and over again forever
@@ -79,6 +88,10 @@ void loop() {
 
   // print the temperature in Celsius by using Dallas temperature sensor
   Serial.print(sensors.getTempCByIndex(0));
+  Serial.print(",");
+  Serial.print(sensors.getTempCByIndex(1));
+  Serial.print(",");
+  Serial.print(sensors.getTempCByIndex(2));
   Serial.print(",");
   
   // bme280 sensor
