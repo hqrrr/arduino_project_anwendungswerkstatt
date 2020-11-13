@@ -1,6 +1,6 @@
 # arduino nano smart home project
 
-![image](pictures/arduino_test_multiple_DS18B20_13112020.png)
+![image](pictures/arduino_multiple_DS18B20_13112020.png)
 
 ### for Jupyter Notebook users:
 [get_data.ipynb](/get_data.ipynb)
