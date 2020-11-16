@@ -1,4 +1,4 @@
-# arduino nano smart home project
+# arduino project anwendungswerkstatt
 
 ![image](pictures/arduino_multiple_DS18B20_13112020.png)
 
