@@ -2,6 +2,8 @@
 
 ![image](pictures/arduino_multiple_DS18B20_13112020.png)
 
+![image](pictures/Drucksensor Anleitung.PNG)
+
 ### for Jupyter Notebook users:
 [get_data.ipynb](/get_data.ipynb)
 
