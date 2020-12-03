@@ -1,0 +1,175 @@
+#include <Wire.h>                  //Include I2C-Library
+#include <Adafruit_GFX.h>          //Include Libraries
+#include <Adafruit_SSD1306.h>      //for OLED Display
+#include <DS3231.h>                //for Real Time Clock
+#include <DHT.h>    //for T & Humidity Sensor
+
+//Declaration Temp/Hum-Sensor
+#define DHTPIN 49                   // sensor pin number 49 (Digital Pin)
+#define DHTTYPE DHT11               // sensor type: DHT 11 (DHT22 also possible)
+
+// Declaration for SSD1306 Display (I2C)
+#define SCREEN_WIDTH 128           //pixels display width
+#define SCREEN_HEIGHT 64           //pixels display height
+#define OLED_RESET -1              
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// Declaration Real Time Clock
+RTClib RTC;                        // Initialize real time clock
+DHT dht(DHTPIN, DHTTYPE);          // Initialize DHT sensor for normal 16mhz Arduino
+
+
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+  dht.begin();
+
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;);
+  }
+
+  pinMode(52, INPUT_PULLUP);
+  pinMode(53, INPUT_PULLUP);
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+HomeScreen();
+VoltScreen();
+SenseScreen();
+
+
+}
+
+
+
+// ----------------------------------------- //
+//functions to call
+
+void HomeScreen(void) {
+
+  delay(150);
+  
+  display.setTextSize(3);             // Normal 1:1 pixel scale
+  for(;;) {
+
+    DateTime now = RTC.now();
+
+    display.clearDisplay();
+    display.setTextColor(WHITE, BLACK);        // Draw white text
+    display.setCursor(0,0);             // Start at top-left corner
+    display.setTextSize(1);
+    display.print("Home Screen");
+    
+
+    display.setTextSize(2);
+    display.setTextColor(WHITE, BLACK);        // Draw white text
+    display.setCursor(0,12);
+    display.print(now.day(), DEC);
+    display.print('.');
+    display.print(now.month(), DEC);
+    display.print('.');
+    display.print(now.year(), DEC);
+
+    display.setTextSize(3);
+    display.setTextColor(WHITE, BLACK);        // Draw white text
+    display.setCursor(36,36);
+    display.print(now.hour(), DEC);
+    display.print(':');
+    display.print(now.minute(), DEC);
+    
+    display.display();
+
+    if(digitalRead(52) == LOW) break;
+    
+  }
+ return; 
+}
+
+
+void VoltScreen(void) {
+ delay(150);
+
+while(1) {
+    display.clearDisplay();
+    display.setTextColor(WHITE, BLACK);        // Draw white text
+    display.setCursor(0,0);             // Start at top-left corner
+    display.setTextSize(2);
+    display.println("Volt");
+  
+    int sensorValue = analogRead(A12);
+    sensorValue += 1;
+    display.setTextSize(4);
+    display.setTextColor(WHITE, BLACK);
+    display.setCursor(0,20);
+    display.print(String(sensorValue));
+    display.display();
+    if(digitalRead(52) == LOW) break;
+  }
+}
+
+void SenseScreen(void) {
+
+  delay(150);
+  
+  display.setTextSize(3);             // Normal 1:1 pixel scale
+  for(;;) {
+
+    display.clearDisplay();
+    display.setTextColor(WHITE, BLACK);        // Draw white text
+    display.setCursor(0,0);             // Start at top-left corner
+    display.setTextSize(1);
+    display.print("Sensor Screen");
+    
+    float h = dht.readHumidity();
+    // Read temperature as Celsius
+    float t = dht.readTemperature();
+    
+    
+    display.setCursor(0,18);
+    display.setTextSize(2);
+    display.print(t);
+    display.print(" C");
+
+    display.setCursor(0,40);
+    display.setTextSize(2);
+    display.print(h);
+    display.print(" %");
+    
+    display.display();
+
+    if(digitalRead(52) == LOW) break;
+    
+  }
+ return; 
+}
+
+
+void eventQuery(void) {
+
+  // if(digitalRead(52) == LOW) break;
+  //PROBLEM: Rückgabetyp ist void, es müsste aber "break" zurückgegeben werden
+  
+}
+
+static const unsigned char PROGMEM Bitmap_Home[] =
+{ B00000001, B10000000,
+  B00000011, B11000000,
+  B00000111, B11100000,
+  B00001111, B11110000,
+  B00011111, B11111000,
+  B00111111, B11111100,
+  B01111111, B11111110,
+  B01111111, B11111110,
+  B01111111, B11111110,
+  B01111111, B11111110,
+  B01111111, B11111110,
+  B01111111, B11111110,
+  B01111111, B11111110,
+  B01111111, B11111110,
+  B01111111, B11111110,
+  B01111111, B11111110,};
