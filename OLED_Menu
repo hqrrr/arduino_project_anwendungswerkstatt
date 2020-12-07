@@ -5,7 +5,7 @@
 #include <DHT.h>    //for T & Humidity Sensor
 
 //Declaration Temp/Hum-Sensor
-#define DHTPIN 49                   // sensor pin number 49 (Digital Pin)
+#define DHTPIN 7                    // sensor pin number 7 (Digital Pin)
 #define DHTTYPE DHT11               // sensor type: DHT 11 (DHT22 also possible)
 
 // Declaration for SSD1306 Display (I2C)
@@ -16,9 +16,15 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // Declaration Real Time Clock
 RTClib RTC;                        // Initialize real time clock
+
+//Declaration DHT-Sensor
 DHT dht(DHTPIN, DHTTYPE);          // Initialize DHT sensor for normal 16mhz Arduino
 
 
+// Variables for Motion Sensor
+const int PIN_TO_SENSOR = 4;   // the pin that OUTPUT pin of sensor is connected to
+int pinStateCurrent   = LOW; // current state of pin
+int pinStatePrevious  = LOW; // previous state of pin
 
 void setup() {
   Serial.begin(9600);
@@ -30,8 +36,8 @@ void setup() {
     for(;;);
   }
 
-  pinMode(52, INPUT_PULLUP);
-  pinMode(53, INPUT_PULLUP);
+  pinMode(6, INPUT_PULLUP);
+  pinMode(5, INPUT_PULLUP);
 
 }
 
@@ -41,6 +47,7 @@ void loop() {
 HomeScreen();
 VoltScreen();
 SenseScreen();
+PomodoroScreen();
 
 
 }
@@ -83,8 +90,9 @@ void HomeScreen(void) {
     display.print(now.minute(), DEC);
     
     display.display();
+    coronaAlarm();
 
-    if(digitalRead(52) == LOW) break;
+    if(digitalRead(6) == LOW) break;
     
   }
  return; 
@@ -101,14 +109,17 @@ while(1) {
     display.setTextSize(2);
     display.println("Volt");
   
-    int sensorValue = analogRead(A12);
+    int sensorValue = analogRead(A2);
     sensorValue += 1;
     display.setTextSize(4);
     display.setTextColor(WHITE, BLACK);
     display.setCursor(0,20);
     display.print(String(sensorValue));
     display.display();
-    if(digitalRead(52) == LOW) break;
+
+    coronaAlarm();
+    
+    if(digitalRead(6) == LOW) break;
   }
 }
 
@@ -142,10 +153,18 @@ void SenseScreen(void) {
     
     display.display();
 
-    if(digitalRead(52) == LOW) break;
+    coronaAlarm();
+
+    if(digitalRead(6) == LOW) break;
     
   }
  return; 
+}
+
+void PomodoroScreen(void) {
+
+
+  
 }
 
 
@@ -154,6 +173,39 @@ void eventQuery(void) {
   // if(digitalRead(52) == LOW) break;
   //PROBLEM: Rückgabetyp ist void, es müsste aber "break" zurückgegeben werden
   
+}
+
+void coronaAlarm(void) {
+  
+  pinStatePrevious = pinStateCurrent; // store old state
+  pinStateCurrent = digitalRead(PIN_TO_SENSOR);   // read new state
+
+  if (pinStatePrevious == LOW && pinStateCurrent == HIGH) {   // pin state change: LOW -> HIGH
+    Serial.println("Motion detected!");
+    display.clearDisplay();
+    display.setTextColor(WHITE, BLACK);        // Draw white text
+    
+    display.setCursor(0,0);             // Start at top-left corner
+    display.setTextSize(1);
+    display.print("Corona Warning!");
+
+    display.setCursor(0,22);             // Start at top-left corner
+    display.setTextSize(2);
+    display.print("Abstand");
+
+    display.setCursor(0,44);             // Start at top-left corner
+    display.setTextSize(2);
+    display.print("halten!");
+
+    display.display();
+    delay(2000);
+  }
+  else
+  if (pinStatePrevious == HIGH && pinStateCurrent == LOW) {   // pin state change: HIGH -> LOW
+    Serial.println("Motion stopped!");
+    
+  }
+  return;
 }
 
 static const unsigned char PROGMEM Bitmap_Home[] =
