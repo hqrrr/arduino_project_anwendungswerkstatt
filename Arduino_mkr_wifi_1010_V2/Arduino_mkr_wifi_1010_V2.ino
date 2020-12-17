@@ -37,13 +37,7 @@ int ledPin = 6;
 // bme280 sensor
 float pressure;
 float temperature;
-float altimeter;
 float humidity;
-
-// Dieser ky018-Sensor hat nichts mit unserem Projekt zu tun, nur zum Testzweck
-int ky018_sensorPin = 2; //define analog pin 2
-int ohm_value = 0;
-int lux_value = 0;
 
 
 // ---------------------------
@@ -89,12 +83,6 @@ void loop() {
     while (1);
   } 
   
-  // Dieser ky018-Sensor hat nichts mit unserem Projekt zu tun, nur zum Testzweck
-  // KY-018 PHOTORESISTOR MODULE
-  ohm_value = analogRead(ky018_sensorPin); // Ohm
-  // y=4747*e^(-0.0164x) ; function, Ohm (x) -> Lux (y), according to https://docs.google.com/spreadsheets/d/116wSlU34jTDTN5_HFJ2kBTdmWWZi-rcdivWq9slRP4A/edit?usp=sharing
-  lux_value = 4092 * exp(-0.00977 * ohm_value); // lux
-  
   pressure = bme.getPressure() / 100.0; // Pa -> hPa
   temperature = bme.getTemperature() / 100.0; // degC
   humidity = bme.getHumidity() / 1024.0; // %
@@ -105,9 +93,7 @@ void loop() {
   Serial.print(",");
   Serial.print(pressure);
   Serial.print(",");
-  Serial.print(humidity);
-  Serial.print(",");
-  Serial.println(lux_value);
+  Serial.println(humidity);
 
   // use "client" to check if the server is available
   WiFiClient client = server.available();
@@ -208,13 +194,13 @@ void printWEB() {
           // output
           client.print("Temperature[degC]: ");
           client.print(temperature);
-          client.println("<br />");
+          client.print("<br />");
           client.print("Pressure[hPa]: ");
           client.print(pressure);
-          client.println("<br />");
+          client.print("<br />");
           client.print("Humidity[%]: ");
           client.print(humidity);
-          client.println("<br />");
+          client.print("<br />");
           
           client.println("</html>");
           break;
