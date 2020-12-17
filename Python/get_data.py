@@ -14,13 +14,6 @@ import urllib  # get data from an URL
 # =================================
 #            settings
 # =================================
-# magic commands for jupyter notebook
-# display art of matplotlib
-# %matplotlib tk
-# %matplotlib notebook
-#% matplotlib inline
-
-
 # settings of urllib
 link = "http://192.168.0.99/"
 
