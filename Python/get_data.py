@@ -79,56 +79,58 @@ def plotValues():
 # atexit.register(doAtExit) # if program exit, do function doAtExit to close arduino serial port
 
 # print("arduino.isOpen() = " + str(arduino.isOpen())) # True: open, False: closed
+def get_data():
+    # pre-load some dummy data
+    for i in range(0, 50):
+        temperature.append(20)
+        pressure.append(900)
+        humidity.append(30)
 
-# pre-load some dummy data
-for i in range(0, 50):
-    temperature.append(20)
-    pressure.append(900)
-    humidity.append(30)
+    while True:
+        time.sleep(5)  # 5-sec delay for each loop
+        # reset all lists
+        valueRead_list = []
+        valueRead_list_1 = []
+        valueRead_list_final = []
+        # open link
+        f = urllib.request.urlopen(link)
+        # read data and processing
+        valueRead = f.read()  # type: bytes
+        valueRead_str = str(valueRead.decode("utf-8"))  # type bytes -> string
+        valueRead_str = valueRead_str.strip('<!DOCTYPE HTML>/html').strip().strip(
+            '<br />/html').strip()  # delete useless characters
+        valueRead_list = valueRead_str.split("<br />")  # split into a list according to <br />
+        valueRead_list_1 = [i.split(": ") for i in valueRead_list]  # split values and labels in a new list
+        for i in range(0, len(valueRead_list_1)):
+            valueRead_list_1[i].pop(0)  # delete labels
+            valueRead_list_final.append(valueRead_list_1[i][0])  # import all values in the final list
 
-while True:
-    time.sleep(5)  # 5-sec delay for each loop
-    # reset all lists
-    valueRead_list = []
-    valueRead_list_1 = []
-    valueRead_list_final = []
-    # open link
-    f = urllib.request.urlopen(link)
-    # read data and processing
-    valueRead = f.read()  # type: bytes
-    valueRead_str = str(valueRead.decode("utf-8"))  # type bytes -> string
-    valueRead_str = valueRead_str.strip('<!DOCTYPE HTML>/html').strip().strip(
-        '<br />/html').strip()  # delete useless characters
-    valueRead_list = valueRead_str.split("<br />")  # split into a list according to <br />
-    valueRead_list_1 = [i.split(": ") for i in valueRead_list]  # split values and labels in a new list
-    for i in range(0, len(valueRead_list_1)):
-        valueRead_list_1[i].pop(0)  # delete labels
-        valueRead_list_final.append(valueRead_list_1[i][0])  # import all values in the final list
+        # check if value valid
+        try:
+            for i in range(0, len(valueRead_list_final)):
+                value = float(valueRead_list_final[i])
 
-    # check if value valid
-    try:
-        for i in range(0, len(valueRead_list_final)):
-            value = float(valueRead_list_final[i])
+                if value >= 0:
+                    if i == 0:
+                        temperature.append(value)
+                        temperature.pop(0)
+                    elif i == 1:
+                        pressure.append(value)
+                        pressure.pop(0)
+                    elif i == 2:
+                        humidity.append(value)
+                        humidity.pop(0)
+                    else:
+                        print("Error! len(valueRead_list) incorrect")
 
-            if value >= 0:
-                if i == 0:
-                    temperature.append(value)
-                    temperature.pop(0)
-                elif i == 1:
-                    pressure.append(value)
-                    pressure.pop(0)
-                elif i == 2:
-                    humidity.append(value)
-                    humidity.pop(0)
                 else:
-                    print("Error! len(valueRead_list) incorrect")
+                    print("Invalid! negative number")
 
-            else:
-                print("Invalid! negative number")
-
-        drawnow(plotValues)
+            drawnow(plotValues)
 
 
-    except ValueError:
-        print("Invalid! cannot cast")
-        print(valueRead_str)
+        except ValueError:
+            print("Invalid! cannot cast")
+            print(valueRead_str)
+
+get_data()
