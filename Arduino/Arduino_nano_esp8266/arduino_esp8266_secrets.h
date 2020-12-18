@@ -1,2 +1,2 @@
-#define SECRET_SSID "UPC_NOSIGNAL"
-#define SECRET_PASS "HuangQiRui110494"
+#define SECRET_SSID "xxxxxxxxxxxxxxx"
+#define SECRET_PASS "xxxxxxxxxxxxxxx"
