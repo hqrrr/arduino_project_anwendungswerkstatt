@@ -36,7 +36,7 @@ GUI
 
 Environmental:
 
-![image](pictures/Pycharm_environmental_GUI.PNG)
+![image](/pictures/Pycharm_environmental_GUI.png)
 
 #### 2.2.1 UI
 

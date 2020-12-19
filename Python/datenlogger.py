@@ -14,7 +14,6 @@ from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from pyqtgraph import PlotWidget, plot
 import pyqtgraph as pg
-import os
 
 from gui import Ui_MainWindow
 
@@ -47,7 +46,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.current_time.append(i + 1)
 
         # create plot
-        self.data_line = self.graphWidget.plot(self.current_time, self.temperature, pen=pen, symbol='x', symbolSize=10)
+        self.data_line = self.graphWidget.plot(self.current_time, self.temperature, pen=pen, symbol='x', symbolSize=8)
 
         # get data from Arduino
         self.get_data()
@@ -85,19 +84,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if self.value >= 0:
                 if i == 0:
                     self.temperature.append(self.value)
-                    #self.temperature.pop(0)
+                    self.temperature.pop(0)
                 elif i == 1:
                     self.pressure.append(self.value)
-                    #self.pressure.pop(0)
+                    self.pressure.pop(0)
                 elif i == 2:
                     self.humidity.append(self.value)
-                    #self.humidity.pop(0)
+                    self.humidity.pop(0)
                 else:
                     print("Error! len(valueRead_list) incorrect")
 
             else:
                 print("Invalid! negative number")
-        self.current_time.append(self.current_time[-1] + 1) # Add a new value 1 higher than the last.
+        #self.current_time.append(self.current_time[-1] + 1) # Add a new value 1 higher than the last.
         self.data_line.setData(self.current_time, self.temperature)
 
 
