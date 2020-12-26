@@ -1,18 +1,28 @@
 # arduino project anwendungswerkstatt
 
-## 1. Circuit diagram
+## 1 Diagram
 
-### 1.1 Arduino Nano + 3 Dallas temperature sensor + bme280 sensor + LED (for test purposes)
+### 1.1 Circuit diagram
+
+#### 1.1.1 Arduino Nano + 3 Dallas temperature sensor + bme280 sensor + LED (for test purposes)
 
 ![image](pictures/arduino_multiple_DS18B20_13112020.png)
 
-### 1.2 pressure sensor
+#### 1.1.2 pressure sensor
 
 ![image](pictures/DrucksensorAnleitung.PNG)
 
-### 1.3 Arduino MKR 1010 (incl. ESP32) + bme280 sensor
+#### 1.1.3 Arduino MKR 1010 (incl. ESP32) + bme280 sensor
 
-see bme280 part in 1.1
+see bme280 part in 1.1.1
+
+#### 1.1.4 Arduino Nano + 3 Dallas temperature sensor + bme280 sensor + MOSFET 
+
+![image](pictures/arduino_dallas_bme280_mosfet.png)
+
+### 1.2 Sketch
+
+![image](pictures/sketch.png)
 
 ## 2. python code
 
@@ -50,17 +60,21 @@ used PyUIC5 to convert .ui in .py
 
 ## 3. Arduino code:
 
-### 3.1 test
+### 3.1 Test
 
 [Arduino_nano_dallas_and_bme280_sensor.ino](/Arduino/Arduino_nano_dallas_and_bme280_sensor/Arduino_nano_dallas_and_bme280_sensor.ino)
 
 Circuit diagram --> **1.1**
 
-### 3.2 datenlogger via WiFi
+### 3.2 Datenlogger via WiFi
 
 [Arduino_nano_mkr_wifi_1010_V2.ino](/Arduino/Arduino_mkr_wifi_1010_V2/Arduino_mkr_wifi_1010_V2.ino)
 
 Circuit diagram --> **1.3**
+
+### 3.3 MOSFET control
+
+[Arduino_nano_dallas_and_bme280_sensor_with_mosfet.ino](/Arduino/Arduino_nano_dallas_and_bme280_sensor_with_mosfet/Arduino_nano_dallas_and_bme280_sensor_with_mosfet.ino)
 
 ## 4. list of hardware:
 
@@ -69,6 +83,8 @@ replaced by Arduino Nano (ATmega328P) + ESP8266 module{ **plan A** }
 
 BME280 sensor (temperature/pressure/humidity)
 
+Dallas temperature sensor DS18B20
+
 ## 5. Demo:
-### 5.1 ipython version (matplotlib)
+### 5.1 Datenlogger (jupyter notebook + matplotlib)
 ![image](pictures/plot_demo.gif)
