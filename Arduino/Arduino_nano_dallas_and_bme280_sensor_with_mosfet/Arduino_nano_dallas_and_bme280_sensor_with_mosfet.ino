@@ -37,8 +37,10 @@ Adafruit_BME280 bme;
 // ---------------------------
 //         Variables
 // ---------------------------
-// LED
-int ledPin = 10;
+// mosfet
+int mosfetPin = 6;
+int mosfetOn = 200;
+int mosfetOff = 0;
 // sensors
 float ds00_temperature;
 float ds01_temperature;
@@ -48,12 +50,13 @@ float temperature;
 float altimeter;
 float humidity;
 int deviceCount = 0;
-
+// other
+float t;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
-  pinMode(ledPin, OUTPUT);
+  pinMode(mosfetPin, OUTPUT);
   
   // start serial port 
   Serial.begin(9600); 
@@ -81,8 +84,8 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-  fadeOn(1000,5);
-  fadeOff(1000,5);
+  //fadeOn(1000,5);
+  //fadeOff(1000,5);
 
   // Read values from bme 280 sensor
   pressure = bme.readPressure() / 100; // Pa -> hPa
@@ -122,19 +125,4 @@ void loop() {
     }
   
   delay(3000); // update every 3 sec
-}
-
-void fadeOn(unsigned int time,int increament){
-  for (byte value = 0; value < 255; value+=increament){
-    analogWrite(ledPin, value);
-    delay(time/(255/5));
-    }
-  
-}
-
-void fadeOff(unsigned int time,int increament){
-  for (byte value = 255; value > 0; value-=increament){
-    analogWrite(ledPin, value);
-    delay(time/(255/5));
-    }
 }
