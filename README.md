@@ -34,6 +34,10 @@ GUI
 
 [datenlogger.py](/Python/datenlogger.py)
 
+Environmental:
+
+![image](/pictures/Pycharm_environmental_GUI.png)
+
 #### 2.2.1 UI
 
 [gui.ui](/Python/gui.ui)
