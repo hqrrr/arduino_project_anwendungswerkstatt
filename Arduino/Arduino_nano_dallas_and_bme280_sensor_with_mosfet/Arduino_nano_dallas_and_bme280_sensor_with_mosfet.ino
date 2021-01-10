@@ -5,6 +5,18 @@
 // Date of last update: Nov. 2020
 // =================================
 
+#include <SoftwareSerial.h>
+
+// use D11 as RX and D12 as TX
+SoftwareSerial softSerial(11, 12); // RX, TX
+
+// ---------------------------
+//        Wifi Module
+// ---------------------------
+#include "arduino_esp8266_secrets.h"
+#include <ESP8266WiFi.h>        // Include the Wi-Fi library
+char ssid[] = SECRET_SSID;        // your network SSID (name)
+char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
 
 // ---------------------------
 //  Dallas Temperature sensor
@@ -76,6 +88,20 @@ void setup() {
   Serial.print(deviceCount, DEC);
   Serial.println(" DS18B20 sensors.");
   Serial.println("");
+
+  // Connect to Wi-Fi network with SSID and password
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, pass);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  // Print local IP address and start web server
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
   
   // serial plotter labels
   //Serial.println("Temperature[degC]_Dallas_0,Temperature[degC]_Dallas_1,Temperature[degC]_Dallas_2,Temperature[degC]_bme280,Pressure[hPa],Approx.Altitude[m],Humidity[%]");
