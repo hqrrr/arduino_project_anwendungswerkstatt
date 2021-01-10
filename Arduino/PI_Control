@@ -1,0 +1,64 @@
+// PI controller Code
+/*
+ * by Dorian
+ * 
+ * Concept:
+ * 1) We read the temperature (Input) in the center of the chair
+ * 2) We compare the Input with Setpoint and compute Output (heaterPID.Compute())
+ * 3) We translate output into Power with upper and lower limit (0-100%)
+ * 4) We translate Power into a pulse to control the heater
+ *
+ * Reglerparameter: Kp, Ki, Kd, delay zwischen Messungen
+ * (je kürzer das delay, desto schneller wächst der Integratoranteil im Regler)
+ *
+ */
+
+#include <PID_v1.h>
+double Setpoint;  // T_set
+double Input;     // T_
+double Output;    // Power
+double Kp = 1, Ki = 1, Kd = 0; // Controller Parameters
+
+
+#include <DHT.h>
+#define DHT_pin 7
+#define DHT_type DHT11
+DHT dht(DHT_pin, DHT_type);
+ 
+// Create PID instance
+PID heaterPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+
+void setup() {
+
+  Serial.begin(9600);
+  dht.begin();
+  Input = dht.readTemperature();
+  
+  Setpoint = 30;
+  // Turn PID on
+  heaterPID.SetMode(AUTOMATIC);
+  // Adjust PID values
+  heaterPID.SetTunings(Kp, Ki, Kd);
+
+}
+
+void loop() {
+
+  // Read Input from sensor, compute, write Output to actuator
+  Input = dht.readTemperature();
+  heaterPID.Compute();
+
+  // Set Power (Output) within 0 and 100 %
+  Output = constrain(Output, 0, 100);
+  //analogWrite(3, Power);
+
+  // Output for serial plotter
+  Serial.print(Input);
+  Serial.print("   ");       
+  Serial.print(Output);
+  Serial.print("   ");
+  Serial.println(Setpoint);
+  
+  delay(500);
+
+}
