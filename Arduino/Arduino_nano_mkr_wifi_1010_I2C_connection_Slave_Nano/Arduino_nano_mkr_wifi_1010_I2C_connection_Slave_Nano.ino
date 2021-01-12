@@ -55,8 +55,8 @@ PID heaterPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 // ---------------------------
 // mosfet
 int mosfetPin = 6;
-int mosfetOn = 200;
-int mosfetOff = 0;
+int mosfetOn = 255; // 0 - 255
+int mosfetOff = 0; // 0 - 255
 int heatingOn_time;
 int heatingOff_time;
 // sensors
