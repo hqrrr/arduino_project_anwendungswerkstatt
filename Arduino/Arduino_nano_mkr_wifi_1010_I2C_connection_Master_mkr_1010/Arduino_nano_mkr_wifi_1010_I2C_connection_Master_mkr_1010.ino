@@ -5,21 +5,42 @@
 // Date of last update: Jan. 2021
 // =================================
 
+#include<Wire.h>                //for I2C communication
+
+//#include <DS3231.h>                //for Real Time Clock
+#include <RTCZero.h>
+// Declaration Real Time Clock
+//RTClib RTC;                        // Initialize real time clock
+RTCZero rtc;
+
+const int GMT = 2; //change this to adapt it to your time zone
+
 // ---------------------------
-//     I2C communication
+//   SSD1306 Display (I2C)
+// ---------------------------
+#include <Adafruit_GFX.h>          //Include Libraries
+#include <Adafruit_SSD1306.h>      //for OLED Display
+// Declaration for SSD1306 Display (I2C)
+#define SCREEN_WIDTH 128           //pixels display width
+#define SCREEN_HEIGHT 64           //pixels display height
+#define OLED_RESET -1              
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// ---------------------------
+//      DHT 11 sensor
+// ---------------------------
+#include <DHT.h>
+//Declaration Temp/Hum-Sensor
+#define DHTPIN 7                    // sensor pin number 7 (Digital Pin)
+#define DHTTYPE DHT11               // sensor type: DHT 11 (DHT22 also possible)
+
+//Declaration DHT-Sensor
+DHT dht(DHTPIN, DHTTYPE);          // Initialize DHT sensor for normal 16mhz Arduino
+
+// ---------------------------
+//    PIR sensor hc-sr-501
 // ---------------------------
 #include<Wire.h>
-
-// ---------------------------
-//   Adafruit BME280 sensor
-// ---------------------------
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
-
-Adafruit_BME280 bme;;
-
-// current barrometric pressure of your city
-#define SEALEVELPRESSURE_HPA (1023) // Aachen: 1023
 
 // ---------------------------
 //        Wifi Module
@@ -48,19 +69,29 @@ float humidity = 33.3333;
 float ds00_temperature = 33.3333;
 float ds01_temperature = 33.3333;
 float ds02_temperature = 33.3333;
+
+// Motion Sensor
+const int PIN_TO_SENSOR = 4;   // the pin that OUTPUT pin of sensor is connected to
+int pinStateCurrent   = LOW; // current state of pin
+int pinStatePrevious  = LOW; // previous state of pin
+
 // Variables for Data-Logging and Controlling
 // Sending to Slave
-char heater_onOff = '0';      // default setting after turning on device
+char heater_onOff = '0';      // default setting after turning on device, 0: on, 1: off
 float T_set = 30;          // default setting after turning on device
 float hum_room;       
 float T_room;
 
 // Receiving from Slave
-float T00_is_chair;   // test temperature
+float T00_is_chair;   // temperature
 float T01_is_chair;
 float T02_is_chair;
+float is_sitting = 1;   // 0: true, 1:false, by default = 1
+float PID_Output;
 // bool is_sitting;  // evtl. rauslassen
 
+// Global Variables for practical reasons
+int timerI2C=0; //to store the last second Information has been sent to Slave
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -69,12 +100,9 @@ void setup() {
 
   // Begins I2C communication at pin (A4,A5)
   Wire.begin();
-  
-  // Error message
-  //if (!bme.begin(0x76)) {
-  //  Serial.println("Could not find a valid BME280 sensor, check wiring!");
-  //  while (1);
-  //}
+
+  // start read data from dht sensor
+  dht.begin();
 
   // setup IP address - 192.168.0.99
   WiFi.config(IPAddress(192, 168, 0, 99));
@@ -90,47 +118,56 @@ void setup() {
   printWifiStatus();
   Serial.println("----------------------------------------");
 
+  // real time clock
+  rtc.begin();
+  unsigned long epoch;
+  int numberOfTries = 0, maxTries = 15; // try maxTries times to get real time from server.
+  do {
+    epoch = WiFi.getTime();
+    numberOfTries++;
+    // if NTP unreachable, try again after 2 sec.
+    if(epoch == 0){
+      Serial.print("WiFi.getTime try again...");
+      Serial.print(numberOfTries);
+      Serial.print(" / ");
+      Serial.println(maxTries);
+      delay(2000);
+    };
+  }
+  while ((epoch == 0) && (numberOfTries < maxTries));
+  if (numberOfTries == maxTries) {
+    Serial.print("NTP unreachable!!");
+    //while (1);
+  }
+  else {
+    Serial.print("Epoch received: ");
+    Serial.println(epoch);
+    rtc.setEpoch(epoch);
+    Serial.println();
+  }
+
+  // button
+  pinMode(6, INPUT_PULLUP);
+  pinMode(5, INPUT_PULLUP);
+  
+  // Error message
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;);
+  }
+
   // serial plotter labels
-  Serial.println("Temperature[degC],Pressure[hPa],Approx.Altitude[m],Humidity[%],T00_is_chair[degC],T01_is_chair[degC],T02_is_chair[degC]");
+  Serial.println("Temperature[degC],Humidity[%],T00_is_chair[degC],T01_is_chair[degC],T02_is_chair[degC]");
   
 }
 
 // the loop function runs over and over again forever
 void loop() {
-  // Read values from bme 280 sensor
-  //pressure = bme.readPressure() / 100; // Pa -> hPa
-  //temperature = bme.readTemperature(); // degC
-  //humidity = bme.readHumidity(); // %
-  //altimeter = bme.readAltitude(SEALEVELPRESSURE_HPA); // m
 
-  // start I2C communication between Master and Slave
-  Master_communication();
-
-  // bme280 sensor
-  Serial.print(temperature);
-  Serial.print(",");
-  Serial.print(pressure);
-  Serial.print(",");
-  Serial.print(altimeter);
-  Serial.print(",");
-  Serial.print(humidity);
-  Serial.print(",");
-  Serial.print(T00_is_chair);
-  Serial.print(",");
-  Serial.print(T01_is_chair);
-  Serial.print(",");
-  Serial.println(T02_is_chair);
-
-  // use "client" to check if the server is available
-  WiFiClient client = server.available();
-  // If it is, execute the printWEB() function.
-  if (client) {
-    printWEB();
-  }
-
+  HomeScreen();
+  ControlScreen();
+  SenseScreen();
   
-  
-  delay(5000); // update every 5 sec
 }
 
 // ---------------------------
@@ -139,49 +176,243 @@ void loop() {
 void Master_communication(void) {
   
   //DateTime now = RTC.now();
-
+  // Read values from dht 11 sensor
+  T_room = dht.readTemperature(); // degC
+  hum_room = dht.readHumidity(); // %
+  
   String T_set_Str = String(T_set, DEC).substring(0,2);
-  String hum_room_Str = String(humidity, DEC).substring(0,5);
-  String T_room_Str = String(temperature, DEC).substring(0,5);
+  String hum_room_Str = String(hum_room, DEC).substring(0,5);
+  String T_room_Str = String(T_room, DEC).substring(0,5);
   //String time_stamp_Str = String(time_stamp, DEC).substring(0,15);
 
-  // WRITE / SEND
-  //Serial.println("Master Communication Started");
-  Wire.beginTransmission(8);                  // transmit to device #8
-  Wire.write(heater_onOff);                     // 1 byte
-  Serial.println(heater_onOff);
-  //Serial.println(heater_onOff);
-  Wire.write(T_set_Str.c_str());                // 2 bytes (z.B. 20)
-  Serial.println(T_set_Str);
-  //Serial.println(T_set_Str.c_str());
-  Wire.write(hum_room_Str.c_str());             // 5 bytes
-  Serial.println(hum_room_Str);
-  //Serial.println(hum_room_Str.c_str());
-  Wire.write(T_room_Str.c_str());               // 5 bytes
-  Serial.println(T_room_Str);
-  //Serial.println(T_room_Str.c_str());
-  //Wire.write(time_stamp);                       // 15 bytes (DDMMYY HH:MM:SS)
-  Wire.endTransmission();                     // stop transmitting
+  // If it is more than 5 seconds away from the last communication -> start new communication and print Web
+  if ((abs((rtc.getSeconds() - timerI2C)) > 5))  {
+    // WRITE / SEND
+    //Serial.println("Master Communication Started");
+    Wire.beginTransmission(8);                  // transmit to device #8
+    Wire.write(heater_onOff);                     // 1 byte
+    Serial.print("heater_onOff: ");
+    Serial.println(heater_onOff);
+    //Serial.println(heater_onOff);
+    Wire.write(T_set_Str.c_str());                // 2 bytes (z.B. 20)
+    Serial.print("T_set_Str: ");
+    Serial.println(T_set_Str);
+    //Serial.println(T_set_Str.c_str());
+    Wire.write(hum_room_Str.c_str());             // 5 bytes
+    Serial.print("hum_room_Str: ");
+    Serial.println(hum_room_Str);
+    //Serial.println(hum_room_Str.c_str());
+    Wire.write(T_room_Str.c_str());               // 5 bytes
+    Serial.print("T_room_Str: ");
+    Serial.println(T_room_Str);
+    //Serial.println(T_room_Str.c_str());
+    //Wire.write(time_stamp);                       // 15 bytes (DDMMYY HH:MM:SS)
+    Wire.endTransmission();                     // stop transmitting
+  
+  
+    // READ / REQUEST
+    char data_received[31];
+    int r = 0;
+    Wire.requestFrom(8,18);
+    while (Wire.available()) {
+      data_received[r] = Wire.read();
+      r++;
+    }
+    String data = String(data_received);
+    
+    T00_is_chair = data.substring(0,4).toFloat();
+    T01_is_chair = data.substring(4,8).toFloat();
+    T02_is_chair = data.substring(8,12).toFloat();
+    is_sitting = data.substring(12,13).toFloat();
+    PID_Output = data.substring(13,17).toFloat();
+  
+    Serial.print("data received ");
+    Serial.println(data_received);
+    Serial.print("T00_is_chair: ");
+    Serial.println(T00_is_chair);
+    Serial.print("T01_is_chair: ");
+    Serial.println(T01_is_chair);
+    Serial.print("T02_is_chair: ");
+    Serial.println(T02_is_chair);
+    Serial.print("is_sitting[0:true,1:false]: ");
+    Serial.println(is_sitting);
+    Serial.print("PID_Output: ");
+    Serial.println(PID_Output);
 
+    // use "client" to check if the server is available
+    WiFiClient client = server.available();
+    // If it is, execute the printWEB() function.
+    if (client) {
+      printWEB();
+    }
+    
+    timerI2C = rtc.getSeconds();
+  }  
+}
 
-  // READ / REQUEST
-  char data_received[13];
-  int r = 0;
-  Wire.requestFrom(8,12);
-  while (Wire.available()) {
-    data_received[r] = Wire.read();
-    r++;
+void HomeScreen(void) {
+
+  delay(150);
+  
+  for(;;) {
+
+    display.clearDisplay();
+    display.setTextColor(WHITE, BLACK);         // Draw white text
+    display.setCursor(0,0);                     // Start at top-left corner
+    display.setTextSize(1);
+    display.print("Home");
+    
+    // Show date
+    display.setTextSize(2);    
+    display.setCursor(0,19);
+    display.print(rtc.getDay(), DEC);        
+    display.print('.');
+    display.print(rtc.getMonth(), DEC);
+    display.print('.');
+    display.print(rtc.getYear(), DEC);
+
+    // Show time
+    display.setTextSize(3);
+    display.setCursor(0,40);
+    display.print(rtc.getHours() + GMT, DEC);
+    display.print(':');
+    display.print(rtc.getMinutes(), DEC);
+    
+    display.display();
+    coronaAlarm();
+
+    Master_communication();
+
+    if(digitalRead(6) == LOW) break;
+    
   }
-  String data = String(data_received);
-  
-  T00_is_chair = data.substring(0,4).toFloat();
-  T01_is_chair = data.substring(4,8).toFloat();
-  T02_is_chair = data.substring(8,12).toFloat();
+ return; 
+}
 
-  Serial.print("data received ");
-  Serial.println(data_received);
+void ControlScreen(void) {
+ delay(150);
+
+while(1) {
+
+    // Get T_set
+    int potiValue = analogRead(A2);
+    potiValue += 1;
+    T_set = float(potiValue)/1024*41 + 10;
+
+    //Turn heater_onOff
+    if (digitalRead(5) == LOW) {
+      if (heater_onOff == '0') heater_onOff='1'; 
+      else heater_onOff = '0';
+      delay(150);
+    }
+
+    display.clearDisplay();
+    display.setTextColor(WHITE, BLACK);        // Draw white text
+
+    //Show header                       
+    display.setTextSize(1);
+    display.setCursor(0,0);                   
+    display.print("Chair ");
+    if (heater_onOff == '0') {display.print("On");}
+    else if (heater_onOff == '1') {display.print("Off");}
+    else {display.print("err");}
+    
+    // Show T_set
+    display.setTextSize(2);
+    display.setCursor(0,20); 
+    display.print("Set ");
+    display.print(String(T_set).substring(0,2));
+    display.println(" C");
+
+    // Show T_is_chair           
+    display.print("Now ");
+    display.print(String(T00_is_chair).substring(0,2));
+    display.print(" C");
+
+    display.display();
+
+    coronaAlarm();
+
+    Master_communication();
+    
+    if(digitalRead(6) == LOW) break;
+    
+  }
+}
+
+void SenseScreen(void) {
+
+  delay(150);
   
-  //timerI2C = now.second();
+  display.setTextSize(3);             // Normal 1:1 pixel scale
+  for(;;) {
+
+    // Read humidity (%) and temperature (°C)
+    hum_room = dht.readHumidity();
+    T_room = dht.readTemperature();
+
+    display.clearDisplay();
+    display.setTextColor(WHITE, BLACK);        // Draw white text
+    display.setCursor(0,0);             // Start at top-left corner
+    display.setTextSize(1);
+    display.print("Sensors");
+        
+    display.setCursor(0,18);
+    display.setTextSize(2);
+    display.print(T_room);
+    display.print(" C");
+
+    display.setCursor(0,40);
+    display.setTextSize(2);
+    display.print(hum_room);
+    display.print(" %");
+    
+    display.display();
+
+    coronaAlarm();
+
+    Master_communication();
+
+    if(digitalRead(6) == LOW) break;
+    
+  }
+ return; 
+}
+
+void coronaAlarm(void) {
+  
+  pinStatePrevious = pinStateCurrent; // store old state
+  pinStateCurrent = digitalRead(PIN_TO_SENSOR);   // read new state
+
+  if (pinStatePrevious == LOW && pinStateCurrent == HIGH) {   // pin state change: LOW -> HIGH
+    
+    display.clearDisplay();
+    display.setTextColor(WHITE, BLACK);        // Draw white text
+    
+    display.setCursor(0,0); 
+    display.setTextSize(1);
+    display.print("Corona Warning");
+
+    display.setCursor(0,22);        
+    display.setTextSize(2);
+    display.print("Abstand");
+    
+    display.setCursor(0,44);            
+    display.print("halten!");
+
+    display.display();
+
+    Master_communication();
+    delay(1000);
+    Master_communication();
+    delay(1000);
+    
+  }
+  else if (pinStatePrevious == HIGH && pinStateCurrent == LOW) {   // pin state change: HIGH -> LOW
+    Serial.println("Motion stopped!");
+    
+  }
+  return;
 }
 
 void printWifiStatus() {
@@ -258,22 +489,19 @@ void printWEB() {
 
           // output
           client.print("Temperature[degC]: ");
-          client.print(temperature);
+          client.print(T_room);
           client.print("<br />");
           client.print("Humidity[%]: ");
-          client.print(humidity);
+          client.print(hum_room);
           client.print("<br />");
-          client.print("Pressure[hPa]: ");
-          client.print(pressure);
-          client.print("<br />");
-          client.print("Approx.Altitude[m]: ");
-          client.print(altimeter);
-          client.print("<br />");
-          client.print("heater_onOff: ");
+          client.print("heater_onOff[0:on,1:off]: ");
           client.print(heater_onOff);
           client.print("<br />");
           client.print("T_set: ");
           client.print(T_set);
+          client.print("<br />");
+          client.print("is_sitting[0:true,1:false]: ");
+          client.print(is_sitting);
           client.print("<br />");
           client.print("T00_is_chair: ");
           client.print(T00_is_chair);
@@ -283,6 +511,9 @@ void printWEB() {
           client.print("<br />");
           client.print("T02_is_chair: ");
           client.print(T02_is_chair);
+          client.print("<br />");
+          client.print("PID Output: ");
+          client.print(PID_Output);
           client.print("<br />");
           
           client.println("</html>");
