@@ -153,7 +153,7 @@ void loop() {
 // ---------------------------
 void PID_control() {
   // PID controller, read Input from sensor(received from Master), compute, write Output to actuator
-  Input = T_room;
+  Input = (ds00_temperature + ds01_temperature + ds02_temperature) / 3;  // T mean readed from chair as input
   Setpoint = T_set;
   heaterPID.Compute();
   // Set Power (Output) within 0 and 100 %
