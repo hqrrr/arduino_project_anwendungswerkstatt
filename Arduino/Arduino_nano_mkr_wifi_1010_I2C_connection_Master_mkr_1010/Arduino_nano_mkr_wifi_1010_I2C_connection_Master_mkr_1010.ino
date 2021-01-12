@@ -86,7 +86,7 @@ float T_room;
 float T00_is_chair;   // temperature
 float T01_is_chair;
 float T02_is_chair;
-float is_sitting = 1;   // 0: true, 1:false, by default = 1
+int is_sitting = 1;   // 0: true, 1:false, by default = 1
 float PID_Output;
 // bool is_sitting;  // evtl. rauslassen
 
@@ -223,7 +223,7 @@ void Master_communication(void) {
     T00_is_chair = data.substring(0,4).toFloat();
     T01_is_chair = data.substring(4,8).toFloat();
     T02_is_chair = data.substring(8,12).toFloat();
-    is_sitting = data.substring(12,13).toFloat();
+    is_sitting = data.substring(12,13).toInt();
     PID_Output = data.substring(13,17).toFloat();
   
     Serial.print("data received ");
