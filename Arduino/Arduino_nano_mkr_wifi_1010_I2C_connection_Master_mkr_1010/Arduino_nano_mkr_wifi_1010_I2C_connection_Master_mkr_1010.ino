@@ -13,7 +13,7 @@
 //RTClib RTC;                        // Initialize real time clock
 RTCZero rtc;
 
-const int GMT = 2; //change this to adapt it to your time zone
+const int GMT = 1; //change this to adapt it to your time zone, Germany: GMT + 1
 
 // ---------------------------
 //   SSD1306 Display (I2C)
@@ -103,20 +103,9 @@ void setup() {
 
   // start read data from dht sensor
   dht.begin();
-
-  // setup IP address - 192.168.0.99
-  WiFi.config(IPAddress(192, 168, 0, 99));
-
+  
   enable_WiFi();
   connect_WiFi();
-  
-  server.begin();
-  
-  // you're connected now, so print out the WiFi data:
-  Serial.println("You're connected to the network");
-  Serial.println("----------------------------------------");
-  printWifiStatus();
-  Serial.println("----------------------------------------");
 
   // real time clock
   rtc.begin();
@@ -145,6 +134,17 @@ void setup() {
     rtc.setEpoch(epoch);
     Serial.println();
   }
+
+  // setup IP address - 192.168.0.99
+  WiFi.config(IPAddress(192, 168, 0, 99));
+  
+  server.begin();
+  
+  // you're connected now, so print out the WiFi data:
+  Serial.println("You're connected to the network");
+  Serial.println("----------------------------------------");
+  printWifiStatus();
+  Serial.println("----------------------------------------");
 
   // button
   pinMode(6, INPUT_PULLUP);
@@ -464,6 +464,7 @@ void connect_WiFi() {
 }
 
 void printWEB() {
+
   // listen for incoming clients
   WiFiClient client = server.available();
   if (client) {
