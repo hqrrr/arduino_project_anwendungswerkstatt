@@ -62,19 +62,19 @@ used PyUIC5 to convert .ui in .py
 
 ### 3.1 Test
 
-[Arduino_nano_dallas_and_bme280_sensor.ino](/Arduino/Arduino_nano_dallas_and_bme280_sensor/Arduino_nano_dallas_and_bme280_sensor.ino)
+[Arduino_nano_dallas_and_bme280_sensor.ino](/Arduino/archiv/Arduino_nano_dallas_and_bme280_sensor/Arduino_nano_dallas_and_bme280_sensor.ino)
 
 Circuit diagram --> **1.1**
 
 ### 3.2 Datenlogger via WiFi
 
-[Arduino_nano_mkr_wifi_1010_V2.ino](/Arduino/Arduino_mkr_wifi_1010_V2/Arduino_mkr_wifi_1010_V2.ino)
+[Arduino_nano_mkr_wifi_1010_V2.ino](/Arduino/archiv/Arduino_mkr_wifi_1010_V2/Arduino_mkr_wifi_1010_V2.ino)
 
 Circuit diagram --> **1.3**
 
 ### 3.3 MOSFET control
 
-[Arduino_nano_dallas_and_bme280_sensor_with_mosfet.ino](/Arduino/Arduino_nano_dallas_and_bme280_sensor_with_mosfet/Arduino_nano_dallas_and_bme280_sensor_with_mosfet.ino)
+[Arduino_nano_dallas_and_bme280_sensor_with_mosfet.ino](/Arduino/archiv/Arduino_nano_dallas_and_bme280_sensor_with_mosfet/Arduino_nano_dallas_and_bme280_sensor_with_mosfet.ino)
 
 ## 4. list of hardware:
 
