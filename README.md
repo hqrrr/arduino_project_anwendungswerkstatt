@@ -1,6 +1,6 @@
 # Anwendungswerkstatt project climate chair
 
-# Table of contents
+## Table of contents
 1. [Diagram](#diagram)
     
     1.1 [Draft](#draft)
