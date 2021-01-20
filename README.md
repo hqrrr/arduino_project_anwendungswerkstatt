@@ -64,13 +64,13 @@ Change WiFi username & password in:
 
 [arduino_secrets.h](/Arduino/Arduino_nano_mkr_wifi_1010_I2C_connection_Master_mkr_1010/arduino_secrets.h)
 
-Circuit diagram --> **1.1.1**
+Circuit diagram --> **1.2.1**
 
 ### 3.2 Arduino Chair (Replica) {Arduino Nano ATmega328P (Old Bootloader)}
 
 [Arduino_nano_mkr_wifi_1010_I2C_connection_Replica_Nano.ino](/Arduino/Arduino_nano_mkr_wifi_1010_I2C_connection_Slave_Nano/Arduino_nano_mkr_wifi_1010_I2C_connection_Slave_Nano.ino)
 
-Circuit diagram --> **1.1.2**
+Circuit diagram --> **1.2.2**
 
 ## 4. list of hardware:
 
