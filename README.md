@@ -1,12 +1,37 @@
 # Anwendungswerkstatt project climate chair
 
-## 1 Diagram
+# Table of contents
+1. [Diagram](#diagram)
+    
+    1.1 [Draft](#draft)
+   
+    1.2 [Circuit diagram](#circuit-diagram)
 
-### 1.1 Draft
+    1.3 [Sketch](#sketch)
+
+2. [Python code](#python-code)
+
+    2.1 [get data](#get-data)
+
+    2.2 [GUI](#gui)
+
+3. [Arduino code](#arduino-code)
+
+    3.1 [Arduino desk (Primary)](#primary)
+
+    3.2 [Arduino chair (Replica)](#replica)
+   
+4. [List of hardware](#hardware)
+
+5. [Demo](#demo)
+
+## 1 Diagram <a name="diagram"></a>
+
+### 1.1 Draft <a name="draft"></a>
 
 ![image](pictures/draft.png)
 
-### 1.2 Circuit diagram
+### 1.2 Circuit diagram <a name="circuit-diagram"></a>
 
 #### 1.2.1 Arduino Desk (Primary) {Arduino MKR WiFi 1010}
 
@@ -16,13 +41,13 @@
 
 ![image](pictures/arduino_chair.png)
 
-### 1.3 Sketch
+### 1.3 Sketch <a name="sketch"></a>
 
 ![image](pictures/sketch_20012021.png)
 
-## 2. python code
+## 2. python code <a name="python-code"></a>
 
-### 2.1 function to get data from Arduino via WiFi
+### 2.1 function to get data from Arduino via WiFi <a name="get-data"></a>
 
 in this version, used matplotlib + drawnow libraries to create 
 live plot automatically
@@ -33,7 +58,7 @@ live plot automatically
 #### 2.1.2 for other python IDE users:
 [get_data.py](/Python/get_data.py)
 
-### 2.2 GUI
+### 2.2 GUI <a name="gui"></a>
 
 in this version, used pyqtgraph to create live plot and PyQt5 to create
 GUI
@@ -54,9 +79,9 @@ used QtDesigner to build GUI
 
 used PyUIC5 to convert .ui in .py
 
-## 3. Arduino code:
+## 3. Arduino code: <a name="arduino-code"></a>
 
-### 3.1 Arduino Desk (Primary) {Arduino MKR WiFi 1010}
+### 3.1 Arduino Desk (Primary) {Arduino MKR WiFi 1010} <a name="primary"></a>
 
 [Arduino_nano_mkr_wifi_1010_I2C_connection_Primary_mkr_1010.ino](/Arduino/Arduino_nano_mkr_wifi_1010_I2C_connection_Master_mkr_1010/Arduino_nano_mkr_wifi_1010_I2C_connection_Master_mkr_1010.ino)
 
@@ -66,13 +91,13 @@ Change WiFi username & password in:
 
 Circuit diagram --> **1.2.1**
 
-### 3.2 Arduino Chair (Replica) {Arduino Nano ATmega328P (Old Bootloader)}
+### 3.2 Arduino Chair (Replica) {Arduino Nano ATmega328P (Old Bootloader)} <a name="replica"></a>
 
 [Arduino_nano_mkr_wifi_1010_I2C_connection_Replica_Nano.ino](/Arduino/Arduino_nano_mkr_wifi_1010_I2C_connection_Slave_Nano/Arduino_nano_mkr_wifi_1010_I2C_connection_Slave_Nano.ino)
 
 Circuit diagram --> **1.2.2**
 
-## 4. list of hardware:
+## 4. list of hardware: <a name="hardware"></a>
 
 | components      | name | description | Library / Software |
 | ----------- | ----------- | ----------- | ----------- |
@@ -90,6 +115,6 @@ Circuit diagram --> **1.2.2**
 | MOSFET | Grove MOSFET CJQ4435 | - | - |
 | Heating mat | Car seat heating pad with 2 levels (12 V) | - | - |
 
-## 5. Demo:
+## 5. Demo: <a name="demo"></a>
 ### 5.1 Datenlogger (jupyter notebook + matplotlib)
 ![image](pictures/plot_demo.gif)
