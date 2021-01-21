@@ -1,4 +1,7 @@
-# Anwendungswerkstatt project climate chair
+# Anwendungswerkstatt project climate chair 
+<img src="https://github.com/hqrrr/arduino_project_anwendungswerkstatt/blob/main/Python/icon/logo.png?raw=true" width="128">
+
+
 
 ## Table of contents
 1. [Diagram](#diagram)
