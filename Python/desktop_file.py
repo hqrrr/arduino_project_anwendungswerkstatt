@@ -1,4 +1,5 @@
 import logging
+import urllib
 from _datetime import datetime as dt
 import datetime
 import os
@@ -136,13 +137,13 @@ def main():
 
 
 def get_data(data_ip, temp_min, temp_max, filepath, time_span, logger):
-    #f = urllib.request.urlopen(data_ip)    #open link
-    #valueRead = f.read()  # type: bytes
+    f = urllib.request.urlopen(data_ip)    #open link
+    valueRead = f.read()  # type: bytes
 
-    #valueRead_str = str(valueRead.decode("utf-8"))  # type bytes -> string
-    valueRead_str = '<!DOCTYPE HTML><html>Temperature[degC]: 22.50<br />Humidity[%]: 20.00<br />heater_onOff' \
-                    '[0:on,1:off]: 1<br />T_set: 40.00<br />is_sitting[0:true,1:false]: 0<br />T00_is_chair: 50.70<br '\
-                    '/>T01_is_chair: 23.90<br />T02_is_chair: 23.80<br />PID Output: 19.00<br /></html>'
+    valueRead_str = str(valueRead.decode("utf-8"))  # type bytes -> string
+    #valueRead_str = '<!DOCTYPE HTML><html>Temperature[degC]: 22.50<br />Humidity[%]: 20.00<br />heater_onOff' \
+    #                '[0:on,1:off]: 1<br />T_set: 40.00<br />is_sitting[0:true,1:false]: 0<br />T00_is_chair: 50.70<br '\
+    #                '/>T01_is_chair: 23.90<br />T02_is_chair: 23.80<br />PID Output: 19.00<br /></html>'
 
     valueRead_str = valueRead_str.replace('DOCTYPE', '')
     valueRead_str = valueRead_str.replace('html', '')
