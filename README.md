@@ -1,5 +1,5 @@
 # Anwendungswerkstatt project climate chair 
-<img src="https://github.com/hqrrr/arduino_project_anwendungswerkstatt/blob/main/Python/icon/logo.png?raw=true" width="128">
+<img src="https://github.com/hqrrr/arduino_project_anwendungswerkstatt/blob/main/Python/icon/logo_free.png?raw=true" width="128">
 
 
 

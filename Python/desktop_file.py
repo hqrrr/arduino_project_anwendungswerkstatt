@@ -13,12 +13,13 @@ import pandas as pd
 from tkinter import *
 import time
 import os
-
-
-#from win10toast import ToastNotifier
+from win10toast import ToastNotifier
+import altair_saver
 
 
 starttime = dt.now()    #here the first time starting the program is saved
+#counters for the push notifications are set
+ten_min_counter = 5 * 60 * 60 #5 minutes as a timer to set when the push notifications are allowed to be set
 
 #set up a main function which will count down the minutes and run in the background
 def main():
@@ -51,15 +52,10 @@ def main():
     temp_min = config.get('BasicData', 'temp_min')
     temp_max = config.get('BasicData', 'temp_max')
 
-
-    #counters for the push notifications are set
-    #ten_min_counter =
-
-
     #initial csv creating and writing headers
     filename = 'data' + now.strftime("_%Y-%m-%d") + '.csv'
-    filepath = os.path.abspath(os.path.join(os.path.abspath(__file__), '..', filename))
-    with open(filepath, 'w') as data_file:
+    filepath = os.path.abspath(os.path.join(os.path.abspath(__file__), '..', 'output', 'data', filename))
+    with open(filepath, 'w') as data_file: #for debug comment block
         writer = csv.writer(data_file)
         line = ['Date', 't_mean', 'Temperature', 'Humidity', 'heater_onOff', 'T_set', 'is_sitting',
                 'T00_is_chair', 'T01_is_chair', 'T02_is_chair', 'PID Output', 'consumption']
@@ -81,28 +77,29 @@ def main():
     #starting superfancy gif animation in tkinter!
     gif_filepath = os.path.abspath(os.path.join(os.path.abspath(__file__), '..', 'icon', 'climate_chair.gif'))
     root = Tk()
-    frame_count = 77   #gif von 45 bis 76  #framcount
-    frames = [PhotoImage(file=gif_filepath, format='gif -index %i' % i) for i in range(45, frame_count)]
+    #root.geometry("250x250") #sizing window smaller for better quality
+    frame_count = 76   #gif von 45 bis 76  #framcount
+    frames = [PhotoImage(file=gif_filepath, format='gif -index %i' % i) for i in range(frame_count)]
     label = Label(root)
     label.pack()
-    root.after(0, update, 0, label, frame_count, frames, root)
+    root.after(45, update, 0, label, frame_count, frames, root)
     root.mainloop()
 
-
-    #TODO:change it to a windows notofication
     root = tkinter.Tk() #starting the messagebox window
     root.withdraw() #hiding them
-    messagebox.showinfo("Pomodoro Started!", "\nIt is now: " + timenow.strftime("%H:%M")
-                        + " hrs. \nTimer set fo 25 min.")
+    messagebox.showinfo("Pomodoro Started!", "\nIt is now: " + timenow.strftime("%H:%M") + " hrs. \nTimer set fo 25 min.")
     root.update()
 
     n_pomodoros = 0 #number of pommodoro session
     n_breaks = 0    #if pomodoro is on break 1 or not 0
+    n = 0   #normal ocunter to see
 
     while True:
+        n = n+1 #copunting the intervals and caluclating the timedelta in seconds
+        time_span = n * 5
         #first get the data
-        data = get_data(data_ip, temp_min, temp_max, filepath, logger)
-        write_csv(data, volt, consumption_max, consumption_min, electricity_price, filepath, logger)
+        data = get_data(data_ip, temp_min, temp_max, filepath, time_span, logger)
+        write_csv(data, volt, consumption_max, consumption_min, electricity_price, filepath, time_span, logger)
 
         #check, if the time is 16:00 and the graph booleans are 0, then graph function is triggered
         if graph_boolean == 0 and t_now == t_graph:
@@ -116,10 +113,12 @@ def main():
             if n_breaks == 0:
                 #get funny message to remind of break
                 break_message = pom_push_messages()
+                notification_station(break_message, logger)
                 print(break_message)
                 n_breaks += 1
         else:
-            print('finished break. Please resume work, another pomodoro session starts now.')
+            message = 'finished break. Please resume work, another pomodoro session starts now.'
+            notification_station(message, logger)
             n_breaks = 0
 
             n_pomodoros +=1 #another pomodoro added on
@@ -136,8 +135,7 @@ def main():
         t_now = dt.now()
 
 
-
-def get_data(data_ip, temp_min, temp_max, filepath, logger):
+def get_data(data_ip, temp_min, temp_max, filepath, time_span, logger):
     #f = urllib.request.urlopen(data_ip)    #open link
     #valueRead = f.read()  # type: bytes
 
@@ -176,26 +174,32 @@ def get_data(data_ip, temp_min, temp_max, filepath, logger):
     temp_mean = (float(data_dict['T00_is_chair']) + float(data_dict['T01_is_chair']) + float(data_dict['T02_is_chair']))/3
     data_dict['t_mean'] = temp_mean
 
-    #get push messages out dependent on the consumption and temp field
-    if data_dict['t_mean'] > float(temp_max) or data_dict['t_mean'] < float(temp_min):  #stuhltemperatur
-        push_message = temp_push_messages(data_dict['t_mean'])
-        print(push_message)
-
-    #get PIR Push messages
-    if float(data_dict['PIDOutput']) > 10:
-        pir_message = pir_push_messages()
-        print(pir_message)
+    #checking the notifcation time restrictions
+    if time_span%ten_min_counter == 0:
+        logger.info('checking for notifications')
+        # get push messages out dependent on the consumption and temp field
+        if data_dict['t_mean'] > float(temp_max) or data_dict['t_mean'] < float(temp_min):  #stuhltemperatur
+            push_message = temp_push_messages(data_dict['t_mean'])
+            notification_station(push_message, logger)
+            print(push_message)
+        #get PIR Push messages
+        if float(data_dict['PIDOutput']) > 10:
+            pir_message = pir_push_messages()
+            notification_station(pir_message, logger)
+            print(pir_message)
 
     return data_dict
 
 
-def write_csv(new_data, volt, consumption_max, consumption_min, electricity_price, filepath, logger):
+def write_csv(new_data, volt, consumption_max, consumption_min, electricity_price, filepath, time_span, logger):
     logger.info('Writing data....')
     data = pd.read_csv(filepath)
 
     # calculating consumption
     seconds_duration = (dt.now() - starttime)
-    if seconds_duration > datetime.timedelta(seconds=25):
+    # checking the notifcation time restrictions
+    #if time_span % ten_min_counter == 0:
+    if seconds_duration > datetime.timedelta(seconds=25):   # and time_span - ten_min_counter < 0:
         heating_on = data.loc[data['heater_onOff'] == 0]  # how long the heating was on
         t_heating = heating_on.shape[0] * 5  # time in seconds
         perc_t_heating_on = t_heating / seconds_duration.seconds
@@ -203,6 +207,7 @@ def write_csv(new_data, volt, consumption_max, consumption_min, electricity_pric
         new_data['consumption'] = consumption
         if float(new_data['consumption']) > int(consumption_max) or float(new_data['consumption']) < int(consumption_min): #just guessed
             push_message = cons_push_messages(consumption)
+            notification_station(push_message, logger)
             print(push_message)
         #debug option
         #model_graph(filepath, logger)
@@ -226,7 +231,7 @@ def model_graph(filepath, logger):
     logger.info('Creating Overview diagram at the End of the day')
     logger.info('Drawing........')
 
-    chart_filepath = os.path.abspath(os.path.join(os.path.abspath(__file__), '..', 'charts'))
+    chart_filepath = os.path.abspath(os.path.join(os.path.abspath(__file__), '..', 'output', 'charts'))
 
     print('Waiting for the elves to draw our graph')
     #getting data from the day before at the t_graph time
@@ -238,6 +243,7 @@ def model_graph(filepath, logger):
         y='Temperature'
     )
     chart_temp.save(os.path.join(chart_filepath, 'chart_temp' + starttime.strftime("_%Y-%m-%d") + '.html'))
+    #altair_saver.save(chart_temp, os.path.join(chart_filepath, 'chart_temp' + starttime.strftime("_%Y-%m-%d") + '.png'))
 
     #graph for Humidity
     chart_hum = alt.Chart(data).mark_line().encode(
@@ -306,10 +312,10 @@ def cons_push_messages(consumption):
                                    'Wem kalt ist, arbeitet zu langsam']
 
     push_message_list_low_cons = ['Du darfst es dir gemütlich machen', 'Gönn dir, Brudi', 'Mach den Gönnjamin',
-                                  'Heizt dein Nachabr für dich mit?', 'Lieber Stoßlüften und Heizen, als Corona und sterben',
+                                  'Lieber Stoßlüften und Heizen, als Corona und sterben',
                                   'Du darfst die Jacke ausziehen', 'Wir sind doch nicht in der DDR',
                                   'Wir haben der Kaffeemaschine Bescheid gesagt',
-                                  'Ware Umweltschützer arbeiten im Kleinen', 'Ist dir nicht kalt?',
+                                  'Wahre Umweltschützer arbeiten im Kleinen', 'Ist dir nicht kalt?',
                                   'Heizt dein Nachbar für dich mit?', 'Bist du ein Skandinavier gefangen in Deutschland?']
 
     #check if consumption is higher or lower than ???
@@ -389,20 +395,17 @@ def notification_station(push_message, logger):
     message_list = push_message.split(':')
     pre_message = message_list[0]
     push_message = message_list[1]
-    icon_filepath = os.path.abspath(os.path.join(os.path.abspath(__file__), '..', 'icon', 'climateChair.ico'))
+    icon_filepath = os.path.abspath(os.path.join(os.path.abspath(__file__), '..', 'icon', 'logo_round_free.ico'))
 
     n.show_toast(pre_message, push_message, duration=20, icon_path=icon_filepath)
 
-
-
 def update(ind, label, frame_count, frames, root):
+    if ind > frame_count-1:
+        return
     frame = frames[ind]
     ind += 1
-    if ind == frame_count:
-        ind = 0
-        return
     label.configure(image=frame)
-    root.after(100, update, ind)
+    root.after(100, update, ind, label, frame_count, frames, root)
 
 
 def get_paths(config, conf_section, conf_str):
