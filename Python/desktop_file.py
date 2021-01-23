@@ -203,7 +203,7 @@ def write_csv(new_data, volt, consumption_max, consumption_min, electricity_pric
         heating_on = data.loc[data['heater_onOff'] == 0]  # how long the heating was on
         t_heating = heating_on.shape[0] * 5  # time in seconds
         perc_t_heating_on = t_heating / seconds_duration.seconds
-        consumption = (perc_t_heating_on * int(electricity_price) * int(volt))/100 #consumption in cent
+        consumption = (t_heating * int(electricity_price) * int(volt)*5*3600)/1000 #consumption  12 V * 5 A /1000 * 3600
         new_data['consumption'] = consumption
         if float(new_data['consumption']) > int(consumption_max) or float(new_data['consumption']) < int(consumption_min): #just guessed
             push_message = cons_push_messages(consumption)
