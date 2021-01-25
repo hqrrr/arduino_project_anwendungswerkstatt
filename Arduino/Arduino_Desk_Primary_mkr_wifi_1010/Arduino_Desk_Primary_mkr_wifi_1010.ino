@@ -61,14 +61,6 @@ WiFiServer server(80);            //server socket
 // ---------------------------
 //         Variables
 // ---------------------------
-// sensors
-float pressure = 33.3333;
-float temperature = 33.3333;
-float altimeter = 33.3333;
-float humidity = 33.3333;
-float ds00_temperature = 33.3333;
-float ds01_temperature = 33.3333;
-float ds02_temperature = 33.3333;
 
 // Motion Sensor
 const int PIN_TO_SENSOR = 4;   // the pin that OUTPUT pin of sensor is connected to
