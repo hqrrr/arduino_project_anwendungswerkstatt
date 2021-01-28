@@ -206,7 +206,7 @@ void requestEvent() {
   Wire.write(T01_is_chair_Str.c_str());        // respond with message of 4 bytes as expected by master
   Serial.println("T01_chair = " + String(T_chair2));
   Wire.write(T02_is_chair_Str.c_str());        // respond with message of 4 bytes as expected by master
-  Serial.println("T02_chair = " + String(ds02_temperature));
+  Serial.println("T02_chair = " + String(T_chair3));
   Wire.write(is_sitting_Str.c_str());        // respond with message of 4 bytes as expected by master
   Serial.println("is_sitting = " + String(is_sitting));
   Wire.write(PID_Output_Str.c_str());        // respond with message of 1 bytes as expected by master
