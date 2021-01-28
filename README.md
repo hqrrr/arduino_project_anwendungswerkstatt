@@ -86,17 +86,17 @@ used PyUIC5 to convert .ui in .py
 
 ### 3.1 Arduino Desk (Primary) {Arduino MKR WiFi 1010} <a name="primary"></a>
 
-[Arduino_nano_mkr_wifi_1010_I2C_connection_Primary_mkr_1010.ino](/Arduino/Arduino_nano_mkr_wifi_1010_I2C_connection_Master_mkr_1010/Arduino_nano_mkr_wifi_1010_I2C_connection_Master_mkr_1010.ino)
+[Arduino_Desk_Primary_mkr_wifi_1010.ino](/Arduino/Arduino_Desk_Primary_mkr_wifi_1010/Arduino_Desk_Primary_mkr_wifi_1010.ino)
 
 Change WiFi username & password in:
 
-[arduino_secrets.h](/Arduino/Arduino_nano_mkr_wifi_1010_I2C_connection_Master_mkr_1010/arduino_secrets.h)
+[arduino_secrets.h](/Arduino/Arduino_Desk_Primary_mkr_wifi_1010/arduino_secrets.h)
 
 Circuit diagram --> **1.2.1**
 
 ### 3.2 Arduino Chair (Replica) {Arduino Nano ATmega328P (Old Bootloader)} <a name="replica"></a>
 
-[Arduino_nano_mkr_wifi_1010_I2C_connection_Replica_Nano.ino](/Arduino/Arduino_nano_mkr_wifi_1010_I2C_connection_Slave_Nano/Arduino_nano_mkr_wifi_1010_I2C_connection_Slave_Nano.ino)
+[Arduino_Chair_Replica_Nano.ino](/Arduino/Arduino_Chair_Replica_Nano/Arduino_Chair_Replica_Nano.ino)
 
 Circuit diagram --> **1.2.2**
 
