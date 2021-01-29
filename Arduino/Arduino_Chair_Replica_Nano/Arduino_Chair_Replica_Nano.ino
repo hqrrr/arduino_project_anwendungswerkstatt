@@ -60,9 +60,9 @@ int mosfetOff = 0; // 0 - 255
 int heatingOn_time;
 int heatingOff_time;
 // sensors
-float ds00_temperature = 33.3333; // DS18B20 temperature sensor on the chair
-float ds01_temperature = 33.3333; // DS18B20 temperature sensor on the chair
-float ds02_temperature = 33.3333; // DS18B20 temperature sensor on the chair
+float T_chair1 = 33.3333; // DS18B20 temperature sensor on the chair
+float T_chair2 = 33.3333; // DS18B20 temperature sensor on the chair
+float T_chair3 = 33.3333; // DS18B20 temperature sensor on the chair
 int deviceCount = 0; // count how many DS18B20 temperature sensor on the chair, by default = 0
 int sitting_pressure; // pressure sensor on the chair
 // settings
@@ -120,9 +120,9 @@ void loop() {
   // Send the command to get temperatures
   sensors.requestTemperatures(); 
   // read temperature
-  ds00_temperature = sensors.getTempCByIndex(0);
-  ds01_temperature = sensors.getTempCByIndex(1);
-  ds02_temperature = sensors.getTempCByIndex(2);
+  T_chair1 = sensors.getTempCByIndex(0);
+  T_chair2 = sensors.getTempCByIndex(1);
+  T_chair3 = sensors.getTempCByIndex(2);
   
   // read sitting pressure value
   sitting_pressure = analogRead(A0);
@@ -137,11 +137,11 @@ void loop() {
   Serial.println("Sitting pressure[0-1023],Temperature[degC]_Dallas_0,Temperature[degC]_Dallas_1,Temperature[degC]_Dallas_2");
   Serial.print(sitting_pressure);
   Serial.print(",");
-  Serial.print(ds00_temperature);
+  Serial.print(T_chair1);
   Serial.print(",");
-  Serial.print(ds01_temperature);
+  Serial.print(T_chair2);
   Serial.print(",");
-  Serial.println(ds02_temperature);
+  Serial.println(T_chair3);
 
   // PID controller incl. delay
   PID_control();
@@ -153,7 +153,7 @@ void loop() {
 // ---------------------------
 void PID_control() {
   // PID controller, read Input from sensor(received from Master), compute, write Output to actuator
-  Input = (ds00_temperature + ds01_temperature + ds02_temperature) / 3;  // T mean readed from chair as input
+  Input = (T_chair1 + T_chair2 + T_chair3) / 3;  // T mean readed from chair as input
   Setpoint = T_set;
   heaterPID.Compute();
   // Set Power (Output) within 0 and 100 %
@@ -181,7 +181,7 @@ void PID_control() {
   heatingOn_time = 5000 * Output / 100;
   heatingOff_time = 5000 - heatingOn_time;
 
-  if (ds00_temperature < T_set && ds01_temperature < T_set && ds02_temperature < T_set && is_sitting == 0 && heater_onOff == 0){
+  if (T_chair1 < T_set && T_chair2 < T_set && T_chair3 < T_set && is_sitting == 0 && heater_onOff == 0){
     
     analogWrite(mosfetPin, mosfetOn); // Heizmatte anschalten
     delay(heatingOn_time); // die Zeit ist abhängig von PID Output
@@ -196,17 +196,17 @@ void PID_control() {
 
 
 void requestEvent() {
-  String T00_is_chair_Str = String(ds00_temperature, DEC).substring(0,4);
-  String T01_is_chair_Str = String(ds01_temperature, DEC).substring(0,4);
-  String T02_is_chair_Str = String(ds02_temperature, DEC).substring(0,4);
+  String T00_is_chair_Str = String(T_chair1, DEC).substring(0,4);
+  String T01_is_chair_Str = String(T_chair2, DEC).substring(0,4);
+  String T02_is_chair_Str = String(T_chair3, DEC).substring(0,4);
   String is_sitting_Str = String(is_sitting, DEC).substring(0,1);
   String PID_Output_Str = String(Output, DEC).substring(0,4);
   Wire.write(T00_is_chair_Str.c_str());        // respond with message of 4 bytes as expected by master
-  Serial.println("T00_chair = " + String(ds00_temperature));
+  Serial.println("T00_chair = " + String(T_chair1));
   Wire.write(T01_is_chair_Str.c_str());        // respond with message of 4 bytes as expected by master
-  Serial.println("T01_chair = " + String(ds01_temperature));
+  Serial.println("T01_chair = " + String(T_chair2));
   Wire.write(T02_is_chair_Str.c_str());        // respond with message of 4 bytes as expected by master
-  Serial.println("T02_chair = " + String(ds02_temperature));
+  Serial.println("T02_chair = " + String(T_chair3));
   Wire.write(is_sitting_Str.c_str());        // respond with message of 4 bytes as expected by master
   Serial.println("is_sitting = " + String(is_sitting));
   Wire.write(PID_Output_Str.c_str());        // respond with message of 1 bytes as expected by master
