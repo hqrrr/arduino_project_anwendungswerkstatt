@@ -7,15 +7,16 @@ import random
 import tkinter
 from tkinter import messagebox
 import altair as alt
+import altair_saver
+import altair_viewer
+#from altair_saver import save
 import csv
 import pandas as pd
 import time
 import os
 from win10toast import ToastNotifier
 
-
 starttime = dt.now()  # here the first time starting the program is saved
-
 
 # set up a main function which will count down the minutes and run in the background
 def main():
@@ -59,11 +60,11 @@ def main():
     # initial csv creating and writing headers
     filename = 'data' + now.strftime("_%Y-%m-%d") + '.csv'
     filepath = os.path.abspath(os.path.join(os.path.abspath(__file__), '..', 'output', 'data', filename))
-    with open(filepath, 'w') as data_file:  # for debug comment block
-        writer = csv.writer(data_file)
-        line = ['Date', 't_mean', 'Temperature', 'Humidity', 'heater_onOff', 'T_set', 'is_sitting',
-                'T00_is_chair', 'T01_is_chair', 'T02_is_chair', 'PID Output', 'consumption']
-        writer.writerow(line)
+    #with open(filepath, 'w') as data_file:  # for debug comment block
+    #    writer = csv.writer(data_file)
+    #    line = ['Date', 't_mean', 'Temperature', 'Humidity', 'heater_onOff', 'T_set', 'is_sitting',
+    #            'T00_is_chair', 'T01_is_chair', 'T02_is_chair', 'PID Output', 'consumption']
+    #    writer.writerow(line)
 
     # every 25 minutes 5 minutes timer, after 4 sessions 15 min timer
     timenow = starttime
@@ -97,7 +98,7 @@ def main():
                                    ten_min_counter, push_timedelta, push_bool_time, logger)
 
         # check, if the time is 16:00 and the graph booleans are 0, then graph function is triggered
-        if graph_boolean == 0 and t_now == t_graph:
+        if graph_boolean == 0 and t_now >= t_graph:
             model_graph(filepath, logger)
             graph_boolean = 1
 
@@ -138,9 +139,9 @@ def get_data(data_ip, temp_min, temp_max, push_temp_time, ten_min_counter, push_
 
     value_read_str = str(value_read.decode("utf-8"))
     #debug option
-    #valueRead_str = '<!DOCTYPE HTML><html>Temperature[degC]: 22.50<br />Humidity[%]: 20.00<br />heater_onOff' \
-    #                '[0:on,1:off]: 1<br />T_set: 40.00<br />is_sitting[0:true,1:false]: 0<br />T00_is_chair: 50.70<br ' \
-    #                '/>T01_is_chair: 23.90<br />T02_is_chair: 23.80<br />PID Output: 19.00<br /></html>'
+    #value_read_str = '<!DOCTYPE HTML><html>Temperature[degC]: 30.50<br />Humidity[%]: 29.00<br />heater_onOff' \
+     #               '[0:on,1:off]: 0<br />T_set: 20.00<br />is_sitting[0:true,1:false]: 0<br />T00_is_chair: 20.70<br ' \
+      #              '/>T01_is_chair: 15.90<br />T02_is_chair: 20.80<br />PID Output: 10.00<br /></html>'
 
     value_read_str = value_read_str.replace('DOCTYPE', '')
     value_read_str = value_read_str.replace('html', '')
@@ -180,7 +181,7 @@ def get_data(data_ip, temp_min, temp_max, push_temp_time, ten_min_counter, push_
         if data_dict['t_mean'] > float(temp_max) or data_dict['t_mean'] < float(temp_min):
             push_message = temp_push_messages(data_dict['t_mean'])
             notification_station(push_message, logger)
-            logger.info(push_message)
+            logger.info(str(push_message))
             push_temp_time = dt.now()
 
     return data_dict, push_temp_time
@@ -206,7 +207,7 @@ def write_csv(new_data, volt, consumption_max, consumption_min, electricity_pric
                     consumption_min):
                 push_message = cons_push_messages(consumption)
                 notification_station(push_message, logger)
-                logger.info(push_message)
+                logger.info(str(push_message))
                 push_temp_time = dt.now()
             # debug option
             # model_graph(filepath, logger)
@@ -233,7 +234,7 @@ def model_graph(filepath, logger):
 
     chart_filepath = os.path.abspath(os.path.join(os.path.abspath(__file__), '..', 'output', 'charts'))
 
-    print('Waiting for the elves to draw our graph')
+    logger.info('Waiting for the elves to draw our graph')
     # getting data from the day before at the t_graph time
     data = pd.read_csv(filepath)
 
@@ -242,8 +243,15 @@ def model_graph(filepath, logger):
         x='Date',
         y='Temperature'
     )
+    #altair_saver.save(chart_temp, os.path.join(chart_filepath, 'chart_temp' + starttime.strftime("_%Y-%m-%d") + '.png'))
     chart_temp.save(os.path.join(chart_filepath, 'chart_temp' + starttime.strftime("_%Y-%m-%d") + '.html'))
-    # altair_saver.save(chart_temp, os.path.join(chart_filepath, 'chart_temp' + starttime.strftime("_%Y-%m-%d") + '.png'))
+
+
+    chart_temp_2 = alt.Chart(data).mark_line().encode(
+        x='Date',
+        y='Temperature'
+    ).interactive()
+    chart_temp_2.show()
 
     # graph for Humidity
     chart_hum = alt.Chart(data).mark_line().encode(
@@ -252,7 +260,13 @@ def model_graph(filepath, logger):
     )
     chart_hum.save(os.path.join(chart_filepath, 'chart_humidity' + starttime.strftime("_%Y-%m-%d") + '.html'))
 
-    print('Using you private data to draw your privates.')
+    chart_hum_2 = alt.Chart(data).mark_line().encode(
+        x='Date',
+        y='Humidity:Q'
+    ).interactive()
+    chart_hum_2.show()
+
+    logger.info('Using you private data to draw your privates.')
 
     # graph for consumption
     chart_cons = alt.Chart(data).mark_line().encode(
@@ -261,13 +275,26 @@ def model_graph(filepath, logger):
     )
     chart_cons.save(os.path.join(chart_filepath, 'chart_consumption' + starttime.strftime("_%Y-%m-%d") + '.html'))
 
+    chart_cons_2 = alt.Chart(data).mark_line().encode(
+        x='Date',
+        y='consumption'
+    ).interactive()
+    chart_cons_2.show()
+
     # graph for heater
     chart_heater = alt.Chart(data).mark_line().encode(
         x='Date',
         y='heater_onOff'
     )
+
+    chart_heater_2 = alt.Chart(data).mark_line().encode(
+        x='Date',
+        y='heater_onOff'
+    ).interactive()
+    chart_heater_2.show()
+
     chart_heater.save(os.path.join(chart_filepath, 'chart_heater' + starttime.strftime("_%Y-%m-%d") + '.html'))
-    print('almost finished, need to get the eyes correctly.')
+    logger.info('almost finished, need to get the eyes correctly.')
 
 
 def pom_push_messages():
@@ -367,14 +394,14 @@ def temp_push_messages(temp):
     push_message_list = []
     # here is a list of all possible push messages for pomodoro breaks
     push_message_list_high_temp = ['Brennt es oder ist es der Klimawandel?', 'Stoßlüften',
-                                   'Selbst einem xy wäre es hier zu warm',
+                                   'Selbst einem Kamel wäre es hier zu warm',
                                    'Hier würde selbst Prinz Andrew ins schwitzen kommen', 'Heiß heiß baby',
                                    'Zieh dir erst mal einen Pulli an, bevor du anfängst zu heizen',
                                    'Es ist heißer als der Belag von dem Pizzabaguette',
                                    'So kannst du dein Fett nicht schmelzen lassen',
                                    'Wenn du weiter so machst, kommt der Klimawandel schon nächstes Jahr',
                                    'Noch wärmer und du fängst an zu pfeifen', 'Das Bier wird zu schnell warm',
-                                   'Gleich wirft der Hobbit den Ring hierrein',
+                                   'Gleich wirft der Hobbit den Ring hier rein',
                                    'Vielleicht lieber lüften anstatt zu heizen']
 
     push_message_list_low_temp = ['Es scheint zu ziehen, vielleicht schließt du lieber das Fenter anstatt,'
@@ -410,15 +437,6 @@ def notification_station(push_message, logger):
     icon_filepath = os.path.abspath(os.path.join(os.path.abspath(__file__), '..', 'icon', 'logo_free.ico'))
 
     n.show_toast(pre_message, push_message, duration=20, icon_path=icon_filepath)
-
-
-def update(ind, label, frame_count, frames, root):
-    if ind > frame_count - 1:
-        return
-    frame = frames[ind]
-    ind += 1
-    label.configure(image=frame)
-    root.after(100, update, ind, label, frame_count, frames, root)
 
 
 def get_paths(config, conf_section, conf_str):
