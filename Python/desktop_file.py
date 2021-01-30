@@ -32,7 +32,8 @@ def main():
 
     LOGFORMAT_LONG = '[%(asctime)s]\t{%(filename)s:%(lineno)d}\t%(levelname)s\t- %(message)s'
     logger = logging.getLogger(__name__)
-    logging.basicConfig(level=logging_level, filename=target_file_logs, format=LOGFORMAT_LONG)
+    logging.basicConfig(handlers=[logging.FileHandler(target_file_logs, 'w', 'utf-8')], level=logging_level, format=LOGFORMAT_LONG, )
+    #debug option: logging.basicConfig(level=logging_level, filename=target_file_logs, format=LOGFORMAT_LONG, )
     logging.getLogger().setLevel(logging_level)
     logger.info("Logging is in action")
 
@@ -60,11 +61,14 @@ def main():
     # initial csv creating and writing headers
     filename = 'data' + now.strftime("_%Y-%m-%d") + '.csv'
     filepath = os.path.abspath(os.path.join(os.path.abspath(__file__), '..', 'output', 'data', filename))
-    #with open(filepath, 'w') as data_file:  # for debug comment block
-    #    writer = csv.writer(data_file)
-    #    line = ['Date', 't_mean', 'Temperature', 'Humidity', 'heater_onOff', 'T_set', 'is_sitting',
-    #            'T00_is_chair', 'T01_is_chair', 'T02_is_chair', 'PID Output', 'consumption']
-    #    writer.writerow(line)
+    if not os.path.isfile(filepath):
+        with open(filepath, 'w') as data_file:  # for debug comment block
+            writer = csv.writer(data_file)
+            line = ['Date', 't_mean', 'Temperature', 'Humidity', 'heater_onOff', 'T_set', 'is_sitting',
+                    'T00_is_chair', 'T01_is_chair', 'T02_is_chair', 'PID Output', 'consumption']
+            writer.writerow(line)
+    else:
+        logging.info("csv file for today already exists, everything will be appended.")
 
     # every 25 minutes 5 minutes timer, after 4 sessions 15 min timer
     timenow = starttime
