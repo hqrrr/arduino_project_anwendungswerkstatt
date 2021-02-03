@@ -97,6 +97,3 @@ Circuit diagram --> **1.2.2**
 | MOSFET | Grove MOSFET CJQ4435 | - | - |
 | Heating mat | Car seat heating pad with 2 levels (12 V) | - | - |
 
-## 5. Demo: <a name="demo"></a>
-### 5.1 Datenlogger (jupyter notebook + matplotlib)
-![image](pictures/plot_demo.gif)
