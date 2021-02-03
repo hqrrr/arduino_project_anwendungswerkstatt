@@ -50,37 +50,16 @@
 
 ## 2. python code <a name="python-code"></a>
 
-### 2.1 function to get data from Arduino via WiFi <a name="get-data"></a>
+[desktop_file.py](/Python/desktop_file.py)
 
-in this version, used matplotlib + drawnow libraries to create 
-live plot automatically
+settings:
 
-#### 2.1.1 for Jupyter Notebook users:
-[get_data.ipynb](/Python/get_data.ipynb)
-
-#### 2.1.2 for other python IDE users:
-[get_data.py](/Python/get_data.py)
-
-### 2.2 GUI <a name="gui"></a>
-
-in this version, used pyqtgraph to create live plot and PyQt5 to create
-GUI
-
-[datenlogger.py](/Python/datenlogger.py)
+[desktop.ini](/Python/desktop.ini)
 
 Environmental:
 
 ![image](/pictures/Pycharm_environmental_GUI.png)
 
-#### 2.2.1 UI
-
-[gui.ui](/Python/gui.ui)
-
-used QtDesigner to build GUI
-
-[gui.py](/Python/gui.py)
-
-used PyUIC5 to convert .ui in .py
 
 ## 3. Arduino code: <a name="arduino-code"></a>
 
