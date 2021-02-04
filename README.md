@@ -26,7 +26,7 @@
    
 4. [List of hardware](#hardware)
 
-5. [Demo](#demo)
+
 
 ## 1 Diagram <a name="diagram"></a>
 
