@@ -14,10 +14,6 @@
 
 2. [Python code](#python-code)
 
-    2.1 [get data](#get-data)
-
-    2.2 [GUI](#gui)
-
 3. [Arduino code](#arduino-code)
 
     3.1 [Arduino desk (Primary)](#primary)
